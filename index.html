@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宿舍查寝管理系统</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='88' font-size='88'%3E%F0%9F%9B%8F%3C/text%3E%3C/svg%3E">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --primary:#4f6bf5;--primary-2:#3d55d8;
+  --bg:#f2f4f9;--card:#fff;--text:#22304a;--muted:#7a869e;--line:#e6eaf2;
+  --green:#12b76a;--green-bg:#e7f8f0;--orange:#f79009;--orange-bg:#fef3e2;
+  --red:#ef4444;--red-bg:#fdeaea;--blue:#3b82f6;--blue-bg:#e8f1fe;
+  --sidebar:#1c2637;
+}
+html{-webkit-text-size-adjust:100%}
+body{font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+.app{display:flex;min-height:100vh}
+.sidebar{width:216px;background:var(--sidebar);color:#cbd5e1;padding:16px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.logo{display:flex;gap:10px;align-items:center;padding:6px 10px 16px}
+.logo-ic{font-size:26px}
+.logo-t{font-size:16px;font-weight:700;color:#fff;letter-spacing:.5px}
+.logo-s{font-size:11px;color:#8ea0bd;margin-top:2px}
+.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:none;background:none;color:#aebacd;border-radius:10px;font-size:14px;cursor:pointer;text-align:left;font-family:inherit}
+.nav-btn:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-btn.active{background:var(--primary);color:#fff;font-weight:600}
+.side-tip{margin-top:auto;padding:10px;font-size:11px;color:#5c6c8a;line-height:1.6}
+main{flex:1;padding:22px 26px 44px;min-width:0;max-width:1280px}
+.page-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.page-head h2{font-size:20px}
+.page-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.head-actions{display:flex;gap:8px;flex-wrap:wrap}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.card h3{font-size:15px;margin-bottom:10px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.stat-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.stat-ic{font-size:20px}
+.stat-label{font-size:13px;color:var(--muted)}
+.stat-val{font-size:26px;font-weight:700}
+.bar{height:7px;background:#e9edf5;border-radius:99px;margin-top:10px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--primary);border-radius:99px;transition:width .3s}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+.chip{display:inline-flex;align-items:center;padding:5px 13px;border-radius:999px;font-size:13px;background:#fff;border:1px solid var(--line)}
+.chip::before{content:'';width:8px;height:8px;border-radius:50%;margin-right:7px}
+.chip-present::before{background:var(--green)}.chip-present{color:var(--green)}
+.chip-late::before{background:var(--orange)}.chip-late{color:var(--orange)}
+.chip-absent::before{background:var(--red)}.chip-absent{color:var(--red)}
+.chip-leave::before{background:var(--blue)}.chip-leave{color:var(--blue)}
+.dash-grid{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px}
+.tbl-wrap{overflow:auto;padding:6px 10px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;color:var(--muted);font-weight:500;font-size:12px;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:9px 10px;border-bottom:1px solid #f0f3f8;vertical-align:middle}
+.tbl tbody tr:hover{background:#f8fafc}
+.tbl tr:last-child td{border-bottom:none}
+.strong{font-weight:600}
+.muted{color:var(--muted)}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.badge-present{background:var(--green-bg);color:var(--green)}
+.badge-late{background:var(--orange-bg);color:var(--orange)}
+.badge-absent{background:var(--red-bg);color:var(--red)}
+.badge-leave,.badge-blue{background:var(--blue-bg);color:var(--blue)}
+.badge-gray{background:#eef1f6;color:var(--muted)}
+.btn{padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text);font-size:13px;cursor:pointer;font-weight:500;font-family:inherit;transition:.15s}
+.btn:hover{border-color:var(--primary);color:var(--primary)}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-2);color:#fff}
+.btn-danger{color:var(--red);border-color:#f2c4c4}
+.btn-danger:hover{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:8px}
+.toolbar{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.field input,.field select{padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:13px;background:#fff;color:var(--text);font-family:inherit;min-width:110px}
+.field input:focus,.field select:focus{outline:none;border-color:var(--primary)}
+.grow{flex:1;min-width:170px}
+.grow input{width:100%}
+.checkbox{display:flex;align-items:center;gap:6px;padding-bottom:9px;font-size:13px;cursor:pointer;user-select:none}
+.checkbox input{width:15px;height:15px;accent-color:var(--primary)}
+.progress-info{margin-left:auto;font-size:13px;color:var(--muted);padding-bottom:9px;white-space:nowrap}
+.progress-info b{color:var(--primary);font-size:15px}
+.bld-title{margin:20px 0 10px;font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px}
+.bld-title::before{content:'';width:4px;height:16px;background:var(--primary);border-radius:2px}
+.room-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:12px}
+.room-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-bottom:8px}
+.room-name{font-size:15px;font-weight:700}
+.room-meta{font-size:12px;color:var(--muted);margin-left:8px;font-weight:400}
+.room-actions{display:flex;align-items:center;gap:8px}
+.stu-row{display:flex;align-items:center;gap:12px;padding:8px 4px;border-top:1px dashed var(--line);flex-wrap:wrap}
+.stu-info{width:158px;flex-shrink:0}
+.stu-name{font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.stu-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.st-btns{display:flex;gap:6px;flex-wrap:wrap}
+.st-btn{padding:6px 13px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit;transition:.12s}
+.st-btn:hover{border-color:var(--primary);color:var(--primary)}
+.st-btn.on.st-present{background:var(--green);border-color:var(--green);color:#fff}
+.st-btn.on.st-late{background:var(--orange);border-color:var(--orange);color:#fff}
+.st-btn.on.st-absent{background:var(--red);border-color:var(--red);color:#fff}
+.st-btn.on.st-leave{background:var(--blue);border-color:var(--blue);color:#fff}
+.remark{flex:1;min-width:110px;padding:6px 10px;border:1px dashed var(--line);border-radius:8px;font-size:12px;color:var(--muted);background:#fbfcfe;font-family:inherit}
+.remark:focus{outline:none;border-color:var(--primary);color:var(--text)}
+.empty{padding:40px 20px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:14px;line-height:2}
+.room-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.room-admin-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.room-admin-name{font-size:15px;font-weight:700}
+.member-chips{display:flex;flex-wrap:wrap;gap:6px}
+.mchip{padding:3px 9px;background:#f1f4f9;border-radius:8px;font-size:12px}
+.trend-row{display:flex;align-items:center;gap:10px;margin:8px 0}
+.trend-date{width:44px;font-size:12px;color:var(--muted);flex-shrink:0}
+.trend-bar{flex:1;height:14px;background:#eef1f7;border-radius:99px;overflow:hidden;display:flex}
+.trend-bar i{display:block;height:100%}
+.trend-n{width:26px;text-align:right;font-size:12px;color:var(--muted);flex-shrink:0}
+.ranges{display:flex;gap:8px;padding-bottom:2px}
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal{background:#fff;border-radius:16px;width:min(560px,100%);max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(15,23,42,.25)}
+.modal h3{padding:15px 18px;border-bottom:1px solid var(--line);font-size:16px}
+.modal-body{padding:18px}
+.modal-body p{line-height:1.8}
+.modal-foot{padding:13px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+.form label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.form input,.form select,.form textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:inherit;color:var(--text)}
+.form input:focus,.form select:focus,.form textarea:focus{outline:none;border-color:var(--primary)}
+.form>div{margin-bottom:13px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form textarea{resize:vertical;min-height:120px;line-height:1.8}
+.form .help{font-size:11px;color:var(--muted);margin-top:-8px;margin-bottom:12px;line-height:1.7;white-space:pre-wrap}
+.data-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.data-grid p{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:14px}
+#toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);background:#111827;color:#fff;padding:10px 20px;border-radius:999px;font-size:13px;opacity:0;transition:.25s;z-index:99;pointer-events:none;max-width:80vw}
+#toast.show{opacity:1;transform:translateX(-50%)}
+@media (max-width:860px){
+  .app{flex-direction:column}
+  .sidebar{width:100%;height:auto;position:static;flex-direction:row;align-items:center;overflow-x:auto;padding:10px 12px;gap:6px}
+  .logo{padding:0 8px 0 0}
+  .logo-s{display:none}
+  .nav-btn{width:auto;white-space:nowrap;padding:8px 12px}
+  .side-tip{display:none}
+  main{padding:14px}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .dash-grid{grid-template-columns:1fr}
+  .data-grid{grid-template-columns:1fr}
+  .stu-info{width:130px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo"><span class="logo-ic">🛏️</span><div><div class="logo-t">宿舍查寝</div><div class="logo-s">宿舍管理系统</div></div></div>
+    <button class="nav-btn active" data-act="nav" data-page="dashboard">📊 仪表盘</button>
+    <button class="nav-btn" data-act="nav" data-page="check">✅ 查寝打卡</button>
+    <button class="nav-btn" data-act="nav" data-page="leaves">📝 请假管理</button>
+    <button class="nav-btn" data-act="nav" data-page="students">👥 学生管理</button>
+    <button class="nav-btn" data-act="nav" data-page="rooms">🏠 宿舍管理</button>
+    <button class="nav-btn" data-act="nav" data-page="stats">📈 统计报表</button>
+    <button class="nav-btn" data-act="nav" data-page="data">⚙️ 数据管理</button>
+    <div class="side-tip">数据保存在本机浏览器中<br>请定期在「数据管理」中备份</div>
+  </aside>
+  <main id="main"></main>
+</div>
+<div id="modal-root"></div>
+<div id="toast"></div>
+<noscript>本系统需要启用 JavaScript 才能使用。</noscript>
+<script>
+'use strict';
+/* ================= 工具 ================= */
+var $=function(s){return document.querySelector(s);};
+var $$=function(s){return [].slice.call(document.querySelectorAll(s));};
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function opt(v,label,cur){var c=(cur==null?'':String(cur));return '<option value="'+esc(v)+'"'+(String(v)===c?' selected':'')+'>'+esc(label)+'</option>';}
+function pad2(n){return String(n).length<2?'0'+n:String(n);}
+function fmtDate(d){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
+function today(){return fmtDate(new Date());}
+function addDays(ds,n){var p=ds.split('-');var y=+p[0],m=+p[1],d=+p[2];return fmtDate(new Date(y,m-1,d+n));}
+function dateCn(ds){var p=ds.split('-');var w='日一二三四五六'[new Date(+p[0],+p[1]-1,+p[2]).getDay()];return (+p[0])+'年'+(+p[1])+'月'+(+p[2])+'日 · 周'+w;}
+
+var STATUS={present:{label:'在寝'},late:{label:'晚归'},absent:{label:'未归'},leave:{label:'请假'}};
+function badge(st){return '<span class="badge badge-'+st+'">'+STATUS[st].label+'</span>';}
+
+/* ================= 状态与存储 ================= */
+var KEY='dormCheck.v1';
+function loadState(){
+  try{
+    var o=JSON.parse(localStorage.getItem(KEY));
+    if(o&&Array.isArray(o.rooms)&&Array.isArray(o.students)&&o.checks&&typeof o.checks==='object')return o;
+  }catch(e){}
+  return null;
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+
+var state=loadState();
+
+/* 界面临时状态（不持久化） */
+var ui={
+  page:'dashboard',
+  checkDate:today(),checkBuilding:'',checkQ:'',checkOnlyUnchecked:false,
+  studentQ:'',studentClass:'',
+  roomQ:'',
+  leaveActiveOnly:false,
+  statsFrom:addDays(today(),-29),statsTo:today(),statsClass:'',statsBuilding:''
+};
+
+/* ================= 业务辅助 ================= */
+function roomOf(s){for(var i=0;i<state.rooms.length;i++){if(state.rooms[i].id===s.roomId)return state.rooms[i];}return null;}
+function roomLabel(r){return r.building+' '+r.number;}
+function studentsOf(roomId){
+  return state.students.filter(function(s){return s.roomId===roomId;}).sort(function(a,b){return a.bed-b.bed;});
+}
+function roomsSorted(){
+  return state.rooms.slice().sort(function(a,b){
+    if(a.building!==b.building)return a.building.localeCompare(b.building,'zh');
+    if(a.floor!==b.floor)return a.floor-b.floor;
+    return String(a.number).localeCompare(String(b.number),'zh',{numeric:true});
+  });
+}
+function buildingsOf(){var s=[];state.rooms.forEach(function(r){if(s.indexOf(r.building)<0)s.push(r.building);});return s;}
+function classesOf(){
+  var s=[];
+  state.students.forEach(function(x){if(x.className&&s.indexOf(x.className)<0)s.push(x.className);});
+  return s.sort(function(a,b){return a.localeCompare(b,'zh');});
+}
+function freeBed(roomId){
+  var r=null;state.rooms.forEach(function(x){if(x.id===roomId)r=x;});
+  var used={};studentsOf(roomId).forEach(function(s){used[s.bed]=1;});
+  var cap=r?r.capacity:6;
+  for(var i=1;i<=cap;i++){if(!used[i])return i;}
+  return null;
+}
+function hasLeave(sid,date){
+  return state.leaves.some(function(l){return l.studentId===sid&&l.start<=date&&l.end>=date;});
+}
+
+/* ================= 演示数据 ================= */
+var SUR='张王李赵陈刘杨黄周吴徐孙马朱胡郭何高林罗郑梁谢宋唐许韩冯邓曹彭曾肖田董潘袁蔡蒋余于杜叶程苏魏吕丁任沈姚卢姜崔钟谭陆汪范金石廖贾夏韦方白邹孟熊秦邱江尹薛闫段雷侯龙史陶黎贺顾毛郝龚邵万钱严武戴莫孔向汤'.split('');
+var GIVEN_M=['伟','强','磊','军','洋','勇','杰','涛','明','超','鹏','斌','宇','浩','凯','瑞','子轩','浩然','宇轩','俊杰','铭泽','子墨','天佑','晨曦','思远','志远','文博','嘉懿','煜城','烨华','致远','天翔','博文','鸿飞'];
+var GIVEN_F=['芳','娜','敏','静','丽','婷','玉','慧','巧','美','娅','琦','晶','悦','诗涵','欣怡','梓涵','雨婷','思婷','梦洁','语汐','紫萱','雅静','雪怡','佳琪','若曦','诗琪','美琳','欣然','优璇','乐瑶','书瑶','梦璐'];
+function rnd(a){return a[Math.floor(Math.random()*a.length)];}
+function randName(f){return rnd(SUR)+rnd(f?GIVEN_F:GIVEN_M);}
+
+function seedDemo(){
+  var rooms=[];
+  var b1='梧桐苑1栋',b2='梧桐苑2栋';
+  [[b1,'男'],[b2,'女']].forEach(function(bg){
+    for(var f=2;f<=3;f++)for(var n=1;n<=4;n++)rooms.push({id:uid(),building:bg[0],floor:f,number:''+f+'0'+n,capacity:6,gender:bg[1]});
+  });
+  var classes=['计算机2301班','计算机2302班','软件2301班','网络2301班','大数据2301班'];
+  var students=[];var no=20230000;
+  rooms.forEach(function(r){
+    var count=4+Math.floor(Math.random()*3);
+    for(var b=1;b<=count;b++){
+      no++;
+      students.push({
+        id:uid(),name:randName(r.gender==='女'),sid:String(no),gender:r.gender,
+        className:rnd(classes),roomId:r.id,bed:b,
+        phone:'1'+rnd(['3','5','7','8','9'])+String(Math.floor(Math.random()*1e9)).padStart(9,'0')
+      });
+    }
+  });
+  var checks={};
+  for(var d=6;d>=0;d--){
+    var date=addDays(today(),-d);var day={};
+    students.forEach(function(s){
+      if(d===0&&Math.random()>0.7)return; /* 今天留一部分未查 */
+      var roll=Math.random();var st='present';
+      if(roll>0.97)st='absent';else if(roll>0.94)st='late';else if(roll>0.90)st='leave';
+      day[s.id]={status:st,remark:st==='leave'?'事假':'',ts:Date.now()-d*86400000};
+    });
+    checks[date]=day;
+  }
+  /* 保证今天有异常示例 */
+  var t=today();var pool=students.slice();
+  function take(){return pool.splice(Math.floor(Math.random()*pool.length),1)[0];}
+  ['absent','absent','late'].forEach(function(st){
+    var s=take();
+    if(s)checks[t][s.id]={status:st,remark:st==='absent'?'夜不归宿，已联系辅导员':'',ts:Date.now()};
+  });
+  var leaves=[];
+  for(var i=0;i<2;i++){
+    var s2=take();
+    if(s2){
+      leaves.push({id:uid(),studentId:s2.id,start:addDays(t,-1),end:addDays(t,1),reason:i?'病假：感冒回家休养':'事假：家中急事',approver:'辅导员王老师',ts:Date.now()});
+      checks[t][s2.id]={status:'leave',remark:'请假',ts:Date.now()};
+    }
+  }
+  return {rooms:rooms,students:students,checks:checks,leaves:leaves};
+}
+
+/* ================= 弹窗 / 提示 ================= */
+var modalOkFn=null;
+function openModal(title,body,okText,okCls){
+  modalOkFn=null;
+  okText=okText||'确定';okCls=okCls||'btn-primary';
+  $('#modal-root').innerHTML='<div class="mask"><div class="modal"><h3>'+title+'</h3><div class="modal-body">'+body+'</div><div class="modal-foot"><button class="btn" data-act="closeModal">取消</button><button class="btn '+okCls+'" data-act="modalOk">'+okText+'</button></div></div></div>';
+}
+function closeModal(){$('#modal-root').innerHTML='';modalOkFn=null;}
+function confirmBox(msg,fn,okText){
+  openModal('请确认','<p>'+msg+'</p>',okText||'确定','btn-danger');
+  modalOkFn=fn;
+}
+var toastTimer=null;
+function toast(msg){
+  var t=$('#toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.classList.remove('show');},2200);
+}
+
+/* ================= 导出 ================= */
+function downloadFile(name,content,type){
+  var a=document.createElement('a');
+  var url=URL.createObjectURL(new Blob([content],{type:type}));
+  a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},1000);
+}
+function toCSV(rows){
+  return '\ufeff'+rows.map(function(r){
+    return r.map(function(c){return '"'+String(c==null?'':c).replace(/"/g,'""')+'"';}).join(',');
+  }).join('\r\n');
+}
+
+/* ================= 仪表盘 ================= */
+function statCard(label,val,icon,extra){
+  return '<div class="card stat"><div class="stat-top"><span class="stat-ic">'+icon+'</span><span class="stat-label">'+label+'</span></div><div class="stat-val">'+val+'</div>'+(extra||'')+'</div>';
+}
+
+function trendHTML(){
+  var t=today();var arr=[];
+  for(var i=6;i>=0;i--){
+    var d=addDays(t,-i);var c={late:0,absent:0,leave:0};
+    Object.keys(state.checks[d]||{}).forEach(function(sid){
+      var r=state.checks[d][sid];
+      if(r&&r.status&&c[r.status]!=null)c[r.status]++;
+    });
+    arr.push({d:d,c:c});
+  }
+  var max=1;
+  arr.forEach(function(x){var tot=x.c.absent+x.c.late+x.c.leave;if(tot>max)max=tot;});
+  return arr.map(function(x){
+    var p=x.d.split('-');var tot=x.c.absent+x.c.late+x.c.leave;
+    function seg(n,col){return n?'<i style="width:'+(n/max*100).toFixed(1)+'%;background:'+col+'"></i>':'';}
+    return '<div class="trend-row"><span class="trend-date">'+(+p[1])+'/'+(+p[2])+'</span><div class="trend-bar">'+seg(x.c.late,'var(--orange)')+seg(x.c.absent,'var(--red)')+seg(x.c.leave,'var(--blue)')+'</div><span class="trend-n">'+tot+'</span></div>';
+  }).join('');
+}
+
+function renderDashboard(){
+  var t=today();var day=state.checks[t]||{};
+  var stus=state.students;
+  if(!stus.length){
+    return '<div class="page-head"><h2>📊 仪表盘</h2></div>'+
+    '<div class="empty" style="padding:60px 20px;line-height:2.6">欢迎使用宿舍查寝管理系统<br>当前还没有任何数据，你可以：<br>'+
+    '<button class="btn btn-primary" data-act="seedDemoData">加载演示数据体验</button> '+
+    '<button class="btn" data-act="addRoom">先添加宿舍</button> '+
+    '<button class="btn" data-act="importStudents">批量导入学生</button></div>';
+  }
+  var checked=stus.filter(function(s){return day[s.id]&&day[s.id].status;}).length;
+  var c={present:0,late:0,absent:0,leave:0};
+  stus.forEach(function(s){var r=day[s.id];if(r&&c[r.status]!=null)c[r.status]++;});
+  var rate=checked?Math.round(c.present/checked*100):0;
+  var abn=stus.map(function(s){return {s:s,r:day[s.id]};})
+    .filter(function(x){return x.r&&(x.r.status==='absent'||x.r.status==='late');})
+    .sort(function(a,b){return (a.r.status==='absent'?0:1)-(b.r.status==='absent'?0:1);});
+  var lv=state.leaves.filter(function(l){return l.start<=t&&l.end>=t;})
+    .map(function(l){return {l:l,s:state.students.find(function(x){return x.id===l.studentId;})};})
+    .filter(function(x){return x.s;});
+  var pct=stus.length?Math.round(checked/stus.length*100):0;
+  return ''+
+  '<div class="page-head"><div><h2>📊 仪表盘</h2><div class="page-sub">'+dateCn(t)+' · 今晚查寝情况</div></div>'+
+  '<div class="head-actions"><button class="btn btn-primary" data-act="gotoCheck">✅ 开始今晚查寝</button></div></div>'+
+  '<div class="stat-grid">'+
+    statCard('学生总数',stus.length,'👥')+
+    statCard('宿舍总数',state.rooms.length,'🏠')+
+    statCard('今晚已查',checked+'<span style="font-size:15px;color:var(--muted)"> / '+stus.length+'</span>','🌙','<div class="bar"><i style="width:'+pct+'%"></i></div>')+
+    statCard('在寝率',checked?rate+'%':'—','🌟')+
+  '</div>'+
+  '<div class="chips">'+
+    '<span class="chip chip-present">在寝 '+c.present+'</span>'+
+    '<span class="chip chip-late">晚归 '+c.late+'</span>'+
+    '<span class="chip chip-absent">未归 '+c.absent+'</span>'+
+    '<span class="chip chip-leave">请假 '+c.leave+'</span>'+
+    '<span class="chip">未查 '+(stus.length-checked)+'</span>'+
+  '</div>'+
+  '<div class="dash-grid">'+
+    '<div class="card"><h3>⚠️ 今晚异常名单（未归 / 晚归）</h3>'+
+      (abn.length?
+        '<div class="tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>姓名</th><th>宿舍</th><th>班级</th><th>状态</th><th>备注</th></tr></thead><tbody>'+
+        abn.map(function(x){
+          var rm=roomOf(x.s);
+          return '<tr><td class="strong">'+esc(x.s.name)+'</td><td>'+(rm?esc(roomLabel(rm)):'-')+'</td><td>'+esc(x.s.className||'')+'</td><td>'+badge(x.r.status)+'</td><td class="muted">'+esc(x.r.remark||'')+'</td></tr>';
+        }).join('')+
+        '</tbody></table></div>'
+        :'<div class="empty" style="padding:26px">'+(checked?'🎉 今晚无晚归 / 未归记录':'尚未开始今晚查寝')+'</div>')+
+    '</div>'+
+    '<div class="card"><h3>📅 近 7 天异常趋势</h3>'+trendHTML()+
+      '<div class="muted" style="font-size:11px;margin-top:10px">图例：<span style="color:var(--orange)">■ 晚归</span> <span style="color:var(--red)">■ 未归</span> <span style="color:var(--blue)">■ 请假</span></div>'+
+    '</div>'+
+  '</div>'+
+  '<div class="card"><h3>📝 进行中的请假（'+lv.length+'）</h3>'+
+    (lv.length?
+      '<div class="tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>学生</th><th>宿舍</th><th>请假时间</th><th>事由</th><th>审批人</th></tr></thead><tbody>'+
+      lv.map(function(x){
+        var rm=roomOf(x.s);
+        return '<tr><td class="strong">'+esc(x.s.name)+'</td><td>'+(rm?esc(roomLabel(rm)):'-')+'</td><td>'+x.l.start+' ~ '+x.l.end+'</td><td class="muted">'+esc(x.l.reason)+'</td><td>'+esc(x.l.approver||'')+'</td></tr>';
+      }).join('')+
+      '</tbody></table></div>'
+      :'<div class="muted" style="padding:8px 0">当前没有进行中的请假</div>')+
+  '</div>';
+}
+
+/* ================= 查寝打卡 ================= */
+function checkProgressHTML(){
+  var day=state.checks[ui.checkDate]||{};
+  var total=state.students.length;
+  var checked=state.students.filter(function(s){return day[s.id]&&day[s.id].status;}).length;
+  var c={present:0,late:0,absent:0,leave:0};
+  state.students.forEach(function(s){var r=day[s.id];if(r&&c[r.status]!=null)c[r.status]++;});
+  return '已查 <b>'+checked+'</b>/'+total+' · 在寝 '+c.present+' · 晚归 '+c.late+' · 未归 '+c.absent+' · 请假 '+c.leave;
+}
+
+function checkRowHTML(s,rec){
+  var cur=rec&&rec.status;
+  var lv=hasLeave(s.id,ui.checkDate);
+  var btns=Object.keys(STATUS).map(function(k){
+    var on=cur===k?' on':'';
+    return '<button class="st-btn st-'+k+on+'" data-act="setStatus" data-sid="'+s.id+'" data-st="'+k+'">'+STATUS[k].label+'</button>';
+  }).join('');
+  return '<div class="stu-row">'+
+    '<div class="stu-info"><div class="stu-name">'+esc(s.name)+(lv&&!cur?'<span class="badge badge-blue">请假中</span>':'')+'</div><div class="stu-sub">床'+s.bed+' · '+esc(s.className||'')+'</div></div>'+
+    '<div class="st-btns">'+btns+'</div>'+
+    '<input class="remark" data-sid="'+s.id+'" value="'+esc(rec?rec.remark||'':'')+'" placeholder="备注（晚归/未归原因等）">'+
+  '</div>';
+}
+
+function checkZoneHTML(){
+  var day=state.checks[ui.checkDate]||{};
+  var rooms=roomsSorted();
+  if(ui.checkBuilding)rooms=rooms.filter(function(r){return r.building===ui.checkBuilding;});
+  var q=ui.checkQ.trim();
+  var groups=[];
+  rooms.forEach(function(r){
+    var stus=studentsOf(r.id);
+    if(q)stus=stus.filter(function(s){return s.name.indexOf(q)>=0||s.sid.indexOf(q)>=0||(s.className||'').indexOf(q)>=0||roomLabel(r).indexOf(q)>=0;});
+    if(ui.checkOnlyUnchecked)stus=stus.filter(function(s){return !(day[s.id]&&day[s.id].status);});
+    if(stus.length)groups.push({r:r,stus:stus});
+  });
+  if(!groups.length)return '<div class="empty">没有符合条件的宿舍</div>';
+  var out='';var lastB=null;
+  groups.forEach(function(g){
+    var r=g.r,stus=g.stus;
+    if(r.building!==lastB){out+='<div class="bld-title">'+esc(r.building)+'</div>';lastB=r.building;}
+    var done=stus.filter(function(s){return day[s.id]&&day[s.id].status;}).length;
+    out+='<div class="room-card">'+
+      '<div class="room-head">'+
+        '<div class="room-name">'+esc(r.number)+'<span class="room-meta">'+stus.length+'人 · 已查 '+done+'/'+stus.length+(done===stus.length?' ✅':'')+'</span></div>'+
+        '<div class="room-actions">'+(done===stus.length?'<span class="badge badge-present">已完成</span>':'')+'<button class="btn btn-sm" data-act="roomAllPresent" data-id="'+r.id+'">全寝在寝</button></div>'+
+      '</div>'+
+      stus.map(function(s){return checkRowHTML(s,day[s.id]);}).join('')+
+    '</div>';
+  });
+  return out;
+}
+
+function renderCheck(){
+  return ''+
+  '<div class="page-head"><div><h2>✅ 查寝打卡</h2><div class="page-sub">'+dateCn(ui.checkDate)+(ui.checkDate===today()?'（今晚）':'（补录历史）')+'</div></div>'+
+  '<div class="head-actions"><button class="btn" data-act="exportCheck">导出当日结果</button></div></div>'+
+  '<div class="toolbar card">'+
+    '<div class="field"><label>查寝日期</label><input type="date" id="ck-date" value="'+ui.checkDate+'" max="'+today()+'"></div>'+
+    '<div class="field"><label>楼栋</label><select id="ck-building">'+opt('','全部楼栋',ui.checkBuilding)+buildingsOf().map(function(b){return opt(b,b,ui.checkBuilding);}).join('')+'</select></div>'+
+    '<div class="field grow"><label>搜索</label><input id="ck-q" placeholder="姓名 / 学号 / 班级 / 房号" value="'+esc(ui.checkQ)+'"></div>'+
+    '<label class="checkbox"><input type="checkbox" id="ck-only"'+(ui.checkOnlyUnchecked?' checked':'')+'> 仅看未查</label>'+
+    '<div class="progress-info" id="ck-progress">'+checkProgressHTML()+'</div>'+
+  '</div>'+
+  '<div id="check-zone">'+checkZoneHTML()+'</div>';
+}
+
+function refreshCheck(){
+  var z=$('#check-zone');if(z)z.innerHTML=checkZoneHTML();
+  var p=$('#ck-progress');if(p)p.innerHTML=checkProgressHTML();
+}
+
+/* ================= 学生管理 ================= */
+function studentFiltered(){
+  var q=ui.studentQ.trim();
+  var roomById={};
+  state.rooms.forEach(function(r){roomById[r.id]=r;});
+  var rows=state.students.slice().sort(function(a,b){
+    var ra=roomById[a.roomId],rb=roomById[b.roomId];
+    var ka=ra?ra.building+ra.number:'',kb=rb?rb.building+rb.number:'';
+    var v=ka.localeCompare(kb,'zh');
+    if(v)return v;
+    if(a.bed!==b.bed)return a.bed-b.bed;
+    return a.name.localeCompare(b.name,'zh');
+  });
+  if(q)rows=rows.filter(function(s){
+    var r=roomById[s.roomId];
+    return s.name.indexOf(q)>=0||s.sid.indexOf(q)>=0||(s.className||'').indexOf(q)>=0||(r&&(r.building+r.number).indexOf(q)>=0);
+  });
+  if(ui.studentClass)rows=rows.filter(function(s){return s.className===ui.studentClass;});
+  return rows;
+}
+
+function studentsTableHTML(){
+  var roomById={};
+  state.rooms.forEach(function(r){roomById[r.id]=r;});
+  var rows=studentFiltered();
+  if(!rows.length)return '<div class="empty">暂无学生'+(ui.studentQ||ui.studentClass?'（无匹配结果）':'，点击右上角「添加学生」或「批量导入」开始')+'</div>';
+  return '<div class="card tbl-wrap"><table class="tbl"><thead><tr><th>姓名</th><th>性别</th><th>学号</th><th>班级</th><th>宿舍</th><th>床号</th><th>电话</th><th style="width:130px">操作</th></tr></thead><tbody>'+
+  rows.map(function(s){
+    var r=roomById[s.roomId];
+    return '<tr>'+
+    '<td class="strong">'+esc(s.name)+'</td><td>'+esc(s.gender||'')+'</td><td>'+esc(s.sid)+'</td><td>'+esc(s.className||'')+'</td>'+
+    '<td>'+(r?esc(roomLabel(r)):'<span class="muted">未分配</span>')+'</td><td>'+(s.bed||'-')+'</td><td class="muted">'+esc(s.phone||'')+'</td>'+
+    '<td><button class="btn btn-sm" data-act="editStudent" data-id="'+s.id+'">编辑</button> <button class="btn btn-sm btn-danger" data-act="delStudent" data-id="'+s.id+'">删除</button></td>'+
+    '</tr>';
+  }).join('')+
+  '</tbody></table></div>';
+}
+
+function renderStudents(){
+  return ''+
+  '<div class="page-head"><h2>👥 学生管理</h2><div class="head-actions">'+
+  '<button class="btn" data-act="importStudents">批量导入</button> '+
+  '<button class="btn" data-act="exportStudents">导出CSV</button> '+
+  '<button class="btn btn-primary" data-act="addStudent">＋ 添加学生</button>'+
+  '</div></div>'+
+  '<div class="toolbar card">'+
+  '<div class="field grow"><label>搜索</label><input id="stu-q" placeholder="姓名 / 学号 / 班级 / 宿舍" value="'+esc(ui.studentQ)+'"></div>'+
+  '<div class="field"><label>班级</label><select id="stu-class">'+opt('','全部班级',ui.studentClass)+classesOf().map(function(c){return opt(c,c,ui.studentClass);}).join('')+'</select></div>'+
+  '<div class="progress-info">共 <b>'+studentFiltered().length+'</b> 人</div>'+
+  '</div>'+
+  '<div id="stu-zone">'+studentsTableHTML()+'</div>';
+}
+
+function openStudentModal(id){
+  var s=null;
+  if(id){state.students.forEach(function(x){if(x.id===id)s=x;});}
+  var rooms=roomsSorted();
+  if(!rooms.length)return toast('请先在「宿舍管理」中添加宿舍');
+  var roomOpts=rooms.map(function(r){return opt(r.id,roomLabel(r)+'（'+studentsOf(r.id).length+'/'+r.capacity+'）',s?s.roomId:'');}).join('');
+  openModal(s?'编辑学生':'添加学生',
+  '<div class="form">'+
+    '<div class="row2">'+
+      '<div><label>姓名 *</label><input id="f-name" value="'+esc(s?s.name:'')+'" placeholder="学生姓名"></div>'+
+      '<div><label>性别</label><select id="f-gender">'+opt('男','男',s?s.gender:'男')+opt('女','女',s?s.gender:'')+'</select></div>'+
+    '</div>'+
+    '<div class="row2">'+
+      '<div><label>学号 *</label><input id="f-sid" value="'+esc(s?s.sid:'')+'" placeholder="如 20230001"></div>'+
+      '<div><label>班级</label><input id="f-class" value="'+esc(s?s.className:'')+'" placeholder="如：计算机2301班"></div>'+
+    '</div>'+
+    '<div class="row2">'+
+      '<div><label>宿舍 *</label><select id="f-room"><option value="">请选择宿舍</option>'+roomOpts+'</select></div>'+
+      '<div><label>床号（留空自动分配）</label><input id="f-bed" type="number" min="1" value="'+(s?s.bed:'')+'"></div>'+
+    '</div>'+
+    '<div><label>联系电话</label><input id="f-phone" value="'+esc(s?s.phone:'')+'" placeholder="选填"></div>'+
+  '</div>',s?'保存':'添加');
+  setTimeout(function(){var n=$('#f-name');if(n)n.focus();},50);
+  modalOkFn=function(){
+    var name=$('#f-name').value.trim(),sid=$('#f-sid').value.trim(),gender=$('#f-gender').value;
+    var className=$('#f-class').value.trim(),roomId=$('#f-room').value,phone=$('#f-phone').value.trim();
+    var bed=parseInt($('#f-bed').value,10)||0;
+    var editId=s?s.id:'';
+    if(!name)return toast('请填写姓名');
+    if(!sid)return toast('请填写学号');
+    var dup=state.students.some(function(x){return x.sid===sid&&x.id!==editId;});
+    if(dup)return toast('该学号已存在');
+    if(!roomId)return toast('请选择宿舍');
+    var room=null;state.rooms.forEach(function(x){if(x.id===roomId)room=x;});
+    if(!bed)bed=freeBed(roomId);
+    if(!bed||bed<1||bed>room.capacity)return toast('床号需为 1-'+room.capacity+' 之间的空床位');
+    var taken=studentsOf(roomId).some(function(x){return x.bed===bed&&x.id!==editId;});
+    if(taken)return toast('床 '+bed+' 已被占用');
+    if(s)Object.assign(s,{name:name,sid:sid,gender:gender,className:className,roomId:roomId,bed:bed,phone:phone});
+    else state.students.push({id:uid(),name:name,sid:sid,gender:gender,className:className,roomId:roomId,bed:bed,phone:phone});
+    save();closeModal();render();toast('已保存');
+  };
+}
+
+function openImportModal(){
+  openModal('批量导入学生',
+  '<div class="form">'+
+    '<div class="help">每行一名学生，字段用逗号或 Tab 分隔：\n姓名,学号,性别,班级,楼栋,房号,床号,电话\n示例：张三,20230001,男,计算机2301班,梧桐苑1栋,201,1,13800000000\n楼栋不存在会自动创建；床号留空自动分配。</div>'+
+    '<textarea id="f-raw" placeholder="张三,20230001,男,计算机2301班,梧桐苑1栋,201,,13800000000&#10;李四,20230002,女,软件2301班,梧桐苑2栋,301,,13900000000"></textarea>'+
+  '</div>','开始导入');
+  modalOkFn=function(){
+    var lines=$('#f-raw').value.split(/\r?\n/).map(function(l){return l.trim();}).filter(Boolean);
+    if(!lines.length)return toast('请输入要导入的数据');
+    var exist={};
+    state.students.forEach(function(s){exist[s.sid]=1;});
+    var ok=0;var errs=[];
+    lines.forEach(function(line,i){
+      var p=line.split(/[,，\t]+/).map(function(x){return x.trim();});
+      var name=p[0],sid=p[1],gender=p[2],className=p[3],building=p[4],number=p[5],bed=p[6],phone=p[7];
+      if(!name||!sid||exist[sid]){errs.push(i+1);return;}
+      var room=null;
+      state.rooms.forEach(function(r){if(r.building===building&&r.number===number)room=r;});
+      if(!room){
+        room={id:uid(),building:building||'未分栋',floor:parseInt(String(number).charAt(0),10)||1,number:number||'000',capacity:6,gender:gender||'混合'};
+        state.rooms.push(room);
+      }
+      var b=parseInt(bed,10)||0;
+      if(!b)b=freeBed(room.id);
+      if(!b){errs.push(i+1);return;}
+      state.students.push({id:uid(),name:name,sid:sid,gender:gender||'男',className:className||'',roomId:room.id,bed:b,phone:phone||''});
+      exist[sid]=1;ok++;
+    });
+    save();closeModal();render();
+    toast(errs.length?'导入 '+ok+' 人，'+errs.length+' 行失败（第 '+errs.slice(0,6).join('、')+' 行）':'成功导入 '+ok+' 名学生');
+  };
+}
+
+/* ================= 宿舍管理 ================= */
+function roomsZoneHTML(){
+  var q=ui.roomQ.trim();
+  var rooms=roomsSorted();
+  if(q)rooms=rooms.filter(function(r){return (r.building+r.number).indexOf(q)>=0;});
+  if(!rooms.length)return '<div class="empty">暂无宿舍，点击右上角「添加宿舍」开始</div>';
+  return '<div class="room-grid">'+rooms.map(function(r){
+    var stus=studentsOf(r.id);
+    return '<div class="card room-admin">'+
+      '<div class="room-admin-head">'+
+        '<div><div class="room-admin-name">'+esc(r.building)+' '+esc(r.number)+'</div>'+
+        '<div class="muted" style="font-size:12px;margin-top:3px">'+r.floor+'层 · '+esc(r.gender||'')+'生宿舍 · 入住 '+stus.length+'/'+r.capacity+'</div></div>'+
+        '<div><button class="btn btn-sm" data-act="editRoom" data-id="'+r.id+'">编辑</button> <button class="btn btn-sm btn-danger" data-act="delRoom" data-id="'+r.id+'">删除</button></div>'+
+      '</div>'+
+      '<div class="bar" style="margin:10px 0 12px"><i style="width:'+Math.min(100,stus.length/r.capacity*100)+'%"></i></div>'+
+      '<div class="member-chips">'+(stus.map(function(s){return '<span class="mchip">床'+s.bed+' '+esc(s.name)+'</span>';}).join('')||'<span class="muted" style="font-size:12px">暂无学生入住</span>')+'</div>'+
+    '</div>';
+  }).join('')+'</div>';
+}
+
+function renderRooms(){
+  var q=ui.roomQ.trim();
+  var n=state.rooms.filter(function(r){return !q||(r.building+r.number).indexOf(q)>=0;}).length;
+  return ''+
+  '<div class="page-head"><h2>🏠 宿舍管理</h2><div class="head-actions">'+
+  '<button class="btn btn-primary" data-act="addRoom">＋ 添加宿舍</button>'+
+  '</div></div>'+
+  '<div class="toolbar card">'+
+  '<div class="field grow"><label>搜索</label><input id="rm-q" placeholder="楼栋 / 房号" value="'+esc(ui.roomQ)+'"></div>'+
+  '<div class="progress-info">共 <b>'+n+'</b> 间</div>'+
+  '</div>'+
+  '<div id="rm-zone">'+roomsZoneHTML()+'</div>';
+}
+
+function openRoomModal(id){
+  var r=null;
+  if(id){state.rooms.forEach(function(x){if(x.id===id)r=x;});}
+  var bl=buildingsOf();
+  openModal(r?'编辑宿舍':'添加宿舍',
+  '<datalist id="blds">'+bl.map(function(b){return '<option value="'+esc(b)+'">';}).join('')+'</datalist>'+
+  '<div class="form">'+
+    '<div class="row2">'+
+      '<div><label>楼栋 *</label><input id="f-building" list="blds" value="'+esc(r?r.building:'')+'" placeholder="如：梧桐苑1栋"></div>'+
+      '<div><label>房号 *</label><input id="f-number" value="'+esc(r?r.number:'')+'" placeholder="如：201"></div>'+
+    '</div>'+
+    '<div class="row2">'+
+      '<div><label>楼层</label><input id="f-floor" type="number" value="'+(r?r.floor:'')+'" placeholder="如：2"></div>'+
+      '<div><label>床位容量</label><input id="f-cap" type="number" min="1" max="12" value="'+(r?r.capacity:6)+'"></div>'+
+    '</div>'+
+    '<div><label>宿舍类型</label><select id="f-gender">'+opt('男','男生宿舍',r?r.gender:'')+opt('女','女生宿舍',r?r.gender:'')+opt('混合','混合宿舍',r?r.gender:'')+'</select></div>'+
+  '</div>',r?'保存':'添加');
+  modalOkFn=function(){
+    var building=$('#f-building').value.trim(),number=$('#f-number').value.trim();
+    var floor=parseInt($('#f-floor').value,10)||parseInt(String(number).charAt(0),10)||1;
+    var cap=Math.min(12,Math.max(1,parseInt($('#f-cap').value,10)||6));
+    var gender=$('#f-gender').value;
+    var editId=r?r.id:'';
+    if(!building)return toast('请填写楼栋');
+    if(!number)return toast('请填写房号');
+    var dup=state.rooms.some(function(x){return x.building===building&&x.number===number&&x.id!==editId;});
+    if(dup)return toast('该宿舍已存在');
+    if(r){
+      var n=studentsOf(r.id).length;
+      if(n>cap)return toast('当前已有 '+n+' 人入住，容量不能小于 '+n);
+      Object.assign(r,{building:building,number:number,floor:floor,capacity:cap,gender:gender});
+    }else state.rooms.push({id:uid(),building:building,number:number,floor:floor,capacity:cap,gender:gender});
+    save();closeModal();render();toast('已保存');
+  };
+}
+
+/* ================= 请假管理 ================= */
+function leavesTableHTML(){
+  var t=today();
+  var rows=state.leaves.map(function(l){
+    var s=null;state.students.forEach(function(x){if(x.id===l.studentId)s=x;});
+    return {l:l,s:s};
+  }).filter(function(x){return x.s;});
+  rows.sort(function(a,b){return b.l.start.localeCompare(a.l.start);});
+  if(ui.leaveActiveOnly)rows=rows.filter(function(x){return x.l.start<=t&&x.l.end>=t;});
+  if(!rows.length)return '<div class="empty">暂无'+(ui.leaveActiveOnly?'进行中的':'')+'请假记录</div>';
+  return '<div class="card tbl-wrap"><table class="tbl"><thead><tr><th>学生</th><th>宿舍</th><th>开始</th><th>结束</th><th>天数</th><th>事由</th><th>审批人</th><th>状态</th><th>操作</th></tr></thead><tbody>'+
+  rows.map(function(x){
+    var l=x.l,s=x.s;
+    var r=roomOf(s);
+    var days=Math.round((new Date(l.end)-new Date(l.start))/86400000)+1;
+    var st=l.start>t?'未开始':(l.end<t?'已结束':'进行中');
+    var cls=(l.start>t||l.end<t)?'badge-gray':'badge-blue';
+    return '<tr><td class="strong">'+esc(s.name)+'</td><td>'+(r?esc(roomLabel(r)):'-')+'</td><td>'+l.start+'</td><td>'+l.end+'</td><td>'+days+'</td><td class="muted">'+esc(l.reason)+'</td><td>'+esc(l.approver||'')+'</td><td><span class="badge '+cls+'">'+st+'</span></td><td><button class="btn btn-sm btn-danger" data-act="delLeave" data-id="'+l.id+'">删除</button></td></tr>';
+  }).join('')+
+  '</tbody></table></div>';
+}
+
+function renderLeaves(){
+  var t=today();
+  var n=state.leaves.filter(function(l){return !ui.leaveActiveOnly||(l.start<=t&&l.end>=t);}).length;
+  return ''+
+  '<div class="page-head"><h2>📝 请假管理</h2><div class="head-actions">'+
+  '<button class="btn btn-primary" data-act="addLeave">＋ 登记请假</button>'+
+  '</div></div>'+
+  '<div class="toolbar card">'+
+  '<label class="checkbox"><input type="checkbox" id="lv-only"'+(ui.leaveActiveOnly?' checked':'')+'> 仅看进行中</label>'+
+  '<div class="progress-info">共 <b>'+n+'</b> 条</div>'+
+  '</div>'+
+  '<div id="lv-zone">'+leavesTableHTML()+'</div>';
+}
+
+function openLeaveModal(){
+  if(!state.students.length)return toast('请先添加学生');
+  var stus=state.students.slice().sort(function(a,b){
+    var ra=roomOf(a),rb=roomOf(b);
+    var va=ra?roomLabel(ra):'',vb=rb?roomLabel(rb):'';
+    var v=va.localeCompare(vb,'zh');
+    if(v)return v;
+    return a.bed-b.bed;
+  });
+  openModal('登记请假',
+  '<div class="form">'+
+    '<div><label>学生 *</label><select id="f-stu"><option value="">请选择学生</option>'+stus.map(function(s){
+      var r=roomOf(s);
+      return opt(s.id,(r?roomLabel(r)+' · ':'')+'床'+s.bed+' · '+s.name,'');
+    }).join('')+'</select></div>'+
+    '<div class="row2">'+
+      '<div><label>开始日期 *</label><input type="date" id="f-start" value="'+today()+'"></div>'+
+      '<div><label>结束日期 *</label><input type="date" id="f-end" value="'+today()+'"></div>'+
+    '</div>'+
+    '<div class="row2">'+
+      '<div><label>类型</label><select id="f-type">'+['病假','事假','外出','其他'].map(function(t2){return opt(t2,t2,'病假');}).join('')+'</select></div>'+
+      '<div><label>审批人</label><input id="f-approver" placeholder="如：辅导员王老师"></div>'+
+    '</div>'+
+    '<div><label>补充说明</label><input id="f-note" placeholder="选填"></div>'+
+    '<div class="help" style="margin-top:0">登记后，请假期间尚未查寝的日期会自动标记为「请假」。</div>'+
+  '</div>','登记');
+  modalOkFn=function(){
+    var sid=$('#f-stu').value;
+    if(!sid)return toast('请选择学生');
+    var start=$('#f-start').value,end=$('#f-end').value;
+    if(!start||!end)return toast('请选择请假日期');
+    if(end<start)return toast('结束日期不能早于开始日期');
+    var type=$('#f-type').value,note=$('#f-note').value.trim(),approver=$('#f-approver').value.trim();
+    var reason=note?type+'：'+note:type;
+    state.leaves.push({id:uid(),studentId:sid,start:start,end:end,reason:reason,approver:approver,ts:Date.now()});
+    var stu=null;state.students.forEach(function(x){if(x.id===sid)stu=x;});
+    var filled=0;
+    for(var d=start;d<=end&&d<=today();d=addDays(d,1)){
+      var day=state.checks[d]||(state.checks[d]={});
+      var rec=day[sid];
+      if(!rec||!rec.status){day[sid]={status:'leave',remark:reason,ts:Date.now()};filled++;}
+    }
+    save();closeModal();render();
+    toast('已登记 '+(stu?stu.name:'')+' 的请假'+(filled?'，并自动标记 '+filled+' 天「请假」':''));
+  };
+}
+
+/* ================= 统计报表 ================= */
+function statsData(){
+  var dates=Object.keys(state.checks).filter(function(d){return d>=ui.statsFrom&&d<=ui.statsTo;});
+  var agg={};
+  dates.forEach(function(d){
+    var day=state.checks[d];
+    Object.keys(day).forEach(function(sid){
+      var r=day[sid];
+      if(!r||!r.status)return;
+      var a=agg[sid]||(agg[sid]={present:0,late:0,absent:0,leave:0});
+      a[r.status]++;
+    });
+  });
+  var rows=state.students.map(function(s){
+    var a=agg[s.id]||{present:0,late:0,absent:0,leave:0};
+    return {s:s,a:a,total:a.present+a.late+a.absent+a.leave};
+  });
+  if(ui.statsClass)rows=rows.filter(function(r){return (r.s.className||'')===ui.statsClass;});
+  if(ui.statsBuilding)rows=rows.filter(function(r){var rm=roomOf(r.s);return rm&&rm.building===ui.statsBuilding;});
+  rows.sort(function(a,b){
+    if(b.a.absent!==a.a.absent)return b.a.absent-a.a.absent;
+    if(b.a.late!==a.a.late)return b.a.late-a.a.late;
+    return a.s.name.localeCompare(b.s.name,'zh');
+  });
+  return {dates:dates,rows:rows};
+}
+
+function statsZoneHTML(){
+  var data=statsData();
+  var rows=data.rows;
+  var sum={checks:0,present:0,late:0,absent:0,leave:0};
+  rows.forEach(function(r){
+    sum.checks+=r.total;sum.present+=r.a.present;sum.late+=r.a.late;sum.absent+=r.a.absent;sum.leave+=r.a.leave;
+  });
+  if(!sum.checks)return '<div class="empty">该时间段（'+ui.statsFrom+' ~ '+ui.statsTo+'）内暂无查寝记录</div>';
+  var rate=Math.round(sum.present/sum.checks*100);
+  var cmap={};
+  rows.forEach(function(r){
+    var c=r.s.className||'未分班';
+    var o=cmap[c]||(cmap[c]={n:0,late:0,absent:0,leave:0,checks:0});
+    o.n++;o.late+=r.a.late;o.absent+=r.a.absent;o.leave+=r.a.leave;o.checks+=r.total;
+  });
+  var crows=Object.keys(cmap).map(function(k){return [k,cmap[k]];})
+    .sort(function(a,b){return b[1].absent-a[1].absent||b[1].late-a[1].late;});
+  return ''+
+  '<div class="stat-grid" style="grid-template-columns:repeat(5,1fr)">'+
+    statCard('查寝人次',sum.checks,'📋')+
+    statCard('在寝率',rate+'%','🌟')+
+    statCard('晚归人次','<span style="color:var(--orange)">'+sum.late+'</span>','🕐')+
+    statCard('未归人次','<span style="color:var(--red)">'+sum.absent+'</span>','🚨')+
+    statCard('请假人次','<span style="color:var(--blue)">'+sum.leave+'</span>','📝')+
+  '</div>'+
+  '<div class="card" style="margin-bottom:14px"><h3>班级汇总</h3>'+
+    '<div class="tbl-wrap" style="padding:0"><table class="tbl"><thead><tr><th>班级</th><th>人数</th><th>查寝人次</th><th>晚归</th><th>未归</th><th>请假</th></tr></thead><tbody>'+
+    crows.map(function(x){
+      return '<tr><td class="strong">'+esc(x[0])+'</td><td>'+x[1].n+'</td><td>'+x[1].checks+'</td><td style="color:var(--orange)">'+x[1].late+'</td><td style="color:var(--red)">'+x[1].absent+'</td><td style="color:var(--blue)">'+x[1].leave+'</td></tr>';
+    }).join('')+
+    '</tbody></table></div>'+
+  '</div>'+
+  '<div class="card"><h3>学生明细（按未归、晚归次数排序，共 '+data.dates.length+' 天查寝记录）</h3>'+
+    '<div class="tbl-wrap" style="padding:0;max-height:520px"><table class="tbl"><thead><tr><th>姓名</th><th>学号</th><th>班级</th><th>宿舍</th><th>在寝</th><th>晚归</th><th>未归</th><th>请假</th><th>异常率</th></tr></thead><tbody>'+
+    rows.map(function(x){
+      var r=roomOf(x.s);
+      var bad=x.total?Math.round((x.a.late+x.a.absent)/x.total*100):0;
+      return '<tr><td class="strong">'+esc(x.s.name)+'</td><td>'+esc(x.s.sid)+'</td><td>'+esc(x.s.className||'')+'</td><td>'+(r?esc(roomLabel(r)):'-')+'</td><td>'+x.a.present+'</td><td style="color:var(--orange)">'+(x.a.late||'')+'</td><td style="color:var(--red)">'+(x.a.absent||'')+'</td><td style="color:var(--blue)">'+(x.a.leave||'')+'</td><td>'+(x.total?bad+'%':'—')+'</td></tr>';
+    }).join('')+
+    '</tbody></table></div>'+
+  '</div>';
+}
+
+function renderStats(){
+  function isP(n){return ui.statsTo===today()&&ui.statsFrom===addDays(today(),-(n-1));}
+  return ''+
+  '<div class="page-head"><div><h2>📈 统计报表</h2><div class="page-sub">'+ui.statsFrom+' ~ '+ui.statsTo+'</div></div>'+
+  '<div class="head-actions"><button class="btn" data-act="exportStats">导出CSV</button></div></div>'+
+  '<div class="toolbar card">'+
+    '<div class="ranges">'+
+      '<button class="btn btn-sm '+(isP(7)?'btn-primary':'')+'" data-act="setRange" data-days="7">近7天</button>'+
+      '<button class="btn btn-sm '+(isP(30)?'btn-primary':'')+'" data-act="setRange" data-days="30">近30天</button>'+
+      '<button class="btn btn-sm '+(isP(120)?'btn-primary':'')+'" data-act="setRange" data-days="120">本学期</button>'+
+    '</div>'+
+    '<div class="field"><label>开始日期</label><input type="date" id="st-from" value="'+ui.statsFrom+'" max="'+today()+'"></div>'+
+    '<div class="field"><label>结束日期</label><input type="date" id="st-to" value="'+ui.statsTo+'" max="'+today()+'"></div>'+
+    '<div class="field"><label>班级</label><select id="st-class">'+opt('','全部班级',ui.statsClass)+classesOf().map(function(c){return opt(c,c,ui.statsClass);}).join('')+'</select></div>'+
+    '<div class="field"><label>楼栋</label><select id="st-building">'+opt('','全部楼栋',ui.statsBuilding)+buildingsOf().map(function(b){return opt(b,b,ui.statsBuilding);}).join('')+'</select></div>'+
+  '</div>'+
+  '<div id="st-zone">'+statsZoneHTML()+'</div>';
+}
+
+/* ================= 数据管理 ================= */
+function renderData(){
+  var raw=localStorage.getItem(KEY)||'';
+  var kb=(new Blob([raw]).size/1024).toFixed(1);
+  return ''+
+  '<div class="page-head"><h2>⚙️ 数据管理</h2></div>'+
+  '<div class="data-grid">'+
+    '<div class="card"><h3>💾 数据备份</h3><p>将全部数据（宿舍、学生、查寝记录、请假记录）导出为 JSON 备份文件，可用于归档或迁移到其他设备。</p><button class="btn btn-primary" data-act="exportJson">导出备份文件</button></div>'+
+    '<div class="card"><h3>📥 数据恢复</h3><p>从之前导出的 JSON 备份文件恢复数据，将覆盖当前全部数据，请谨慎操作。</p><button class="btn" data-act="importJson">选择备份文件</button><input type="file" id="import-file" accept=".json,application/json" style="display:none"></div>'+
+    '<div class="card"><h3>🎓 演示数据</h3><p>生成 2 栋楼、16 间宿舍、约 80 名学生及近 7 天查寝记录，用于体验系统功能，会覆盖当前数据。</p><button class="btn" data-act="seedDemoData">加载演示数据</button></div>'+
+    '<div class="card"><h3>🗑️ 清空数据</h3><p>删除本浏览器中保存的全部数据，操作不可恢复，请先导出备份。</p><button class="btn btn-danger" data-act="clearData">清空全部数据</button></div>'+
+  '</div>'+
+  '<div class="card" style="margin-top:14px"><h3>ℹ️ 存储说明</h3>'+
+    '<p style="margin:0">当前保存有 '+state.students.length+' 名学生、'+state.rooms.length+' 间宿舍、'+Object.keys(state.checks).length+' 天查寝记录、'+state.leaves.length+' 条请假记录，共占用约 '+kb+' KB。所有数据仅保存在本机当前浏览器（localStorage）中，更换电脑或浏览器时请通过备份文件迁移。</p>'+
+  '</div>';
+}
+
+/* ================= 路由与渲染 ================= */
+function render(){
+  $$('.nav-btn').forEach(function(b){
+    b.classList.toggle('active',b.dataset.page===ui.page);
+  });
+  var map={dashboard:renderDashboard,check:renderCheck,students:renderStudents,rooms:renderRooms,leaves:renderLeaves,stats:renderStats,data:renderData};
+  $('#main').innerHTML=map[ui.page]();
+}
+
+/* ================= 动作 ================= */
+var ACTIONS={
+  nav:function(el){ui.page=el.dataset.page;render();window.scrollTo(0,0);},
+  closeModal:function(){closeModal();},
+  modalOk:function(){if(modalOkFn)modalOkFn();},
+  gotoCheck:function(){ui.checkDate=today();ui.page='check';render();},
+  setStatus:function(el){
+    var sid=el.dataset.sid,st=el.dataset.st,d=ui.checkDate;
+    var day=state.checks[d]||(state.checks[d]={});
+    var rec=day[sid];
+    if(rec&&rec.status===st){delete day[sid];} /* 再次点击同一状态 = 取消标记 */
+    else day[sid]={status:st,remark:rec?rec.remark||'':'',ts:Date.now()};
+    save();refreshCheck();
+  },
+  roomAllPresent:function(el){
+    var r=null;state.rooms.forEach(function(x){if(x.id===el.dataset.id)r=x;});
+    if(!r)return;
+    var day=state.checks[ui.checkDate]||(state.checks[ui.checkDate]={});
+    var n=0;
+    studentsOf(r.id).forEach(function(s){
+      var rec=day[s.id];
+      if(!rec||!rec.status||rec.status!=='present'){
+        day[s.id]={status:'present',remark:rec?rec.remark||'':'',ts:Date.now()};n++;
+      }
+    });
+    save();refreshCheck();
+    toast(n?'已为 '+r.building+' '+r.number+' 标记 '+n+' 人在寝':'本寝已全部在寝');
+  },
+  exportCheck:function(){
+    var d=ui.checkDate;var day=state.checks[d]||{};
+    var rows=[['楼栋','房号','床号','姓名','学号','班级','状态','备注']];
+    roomsSorted().forEach(function(r){
+      studentsOf(r.id).forEach(function(s){
+        var rec=day[s.id];
+        rows.push([r.building,r.number,s.bed,s.name,s.sid,s.className||'',rec&&rec.status?STATUS[rec.status].label:'未查',rec?rec.remark||'':'']);
+      });
+    });
+    if(rows.length===1)return toast('当前没有学生数据');
+    downloadFile('查寝结果_'+d+'.csv',toCSV(rows),'text/csv');toast('已导出 '+d+' 查寝结果');
+  },
+  addStudent:function(){openStudentModal();},
+  editStudent:function(el){openStudentModal(el.dataset.id);},
+  delStudent:function(el){
+    var s=null;state.students.forEach(function(x){if(x.id===el.dataset.id)s=x;});
+    if(!s)return;
+    confirmBox('确定删除学生「'+esc(s.name)+'」（'+esc(s.sid)+'）？<br>其历史查寝与请假记录将一并删除。',function(){
+      state.students=state.students.filter(function(x){return x.id!==s.id;});
+      Object.keys(state.checks).forEach(function(d){delete state.checks[d][s.id];});
+      state.leaves=state.leaves.filter(function(l){return l.studentId!==s.id;});
+      save();render();toast('已删除');
+    });
+  },
+  importStudents:function(){openImportModal();},
+  exportStudents:function(){
+    var rows=[['姓名','学号','性别','班级','楼栋','房号','床号','电话']];
+    studentFiltered().forEach(function(s){
+      var r=roomOf(s);
+      rows.push([s.name,s.sid,s.gender||'',s.className||'',r?r.building:'',r?r.number:'',s.bed,s.phone||'']);
+    });
+    if(rows.length===1)return toast('没有可导出的数据');
+    downloadFile('学生名单_'+today()+'.csv',toCSV(rows),'text/csv');toast('已导出学生名单');
+  },
+  addRoom:function(){openRoomModal();},
+  editRoom:function(el){openRoomModal(el.dataset.id);},
+  delRoom:function(el){
+    var r=null;state.rooms.forEach(function(x){if(x.id===el.dataset.id)r=x;});
+    if(!r)return;
+    var n=studentsOf(r.id).length;
+    if(n)return toast('该宿舍还有 '+n+' 名学生入住，请先在「学生管理」中调整');
+    confirmBox('确定删除宿舍「'+esc(r.building)+' '+esc(r.number)+'」？',function(){
+      state.rooms=state.rooms.filter(function(x){return x.id!==r.id;});
+      save();render();toast('已删除');
+    });
+  },
+  addLeave:function(){openLeaveModal();},
+  delLeave:function(el){
+    var l=null;state.leaves.forEach(function(x){if(x.id===el.dataset.id)l=x;});
+    if(!l)return;
+    var s=null;state.students.forEach(function(x){if(x.id===l.studentId)s=x;});
+    confirmBox('确定删除'+(s?'「'+esc(s.name)+'」':'')+' '+l.start+' ~ '+l.end+' 的请假记录？<br>已标记的查寝「请假」状态不会自动还原。',function(){
+      state.leaves=state.leaves.filter(function(x){return x.id!==l.id;});
+      save();render();toast('已删除');
+    });
+  },
+  setRange:function(el){
+    var n=parseInt(el.dataset.days,10);
+    ui.statsFrom=addDays(today(),-(n-1));ui.statsTo=today();
+    render();
+  },
+  exportStats:function(){
+    var rows=statsData().rows;
+    if(!rows.length)return toast('当前没有可导出的数据');
+    var out=[['姓名','学号','班级','宿舍','在寝','晚归','未归','请假','查寝次数','异常率']];
+    rows.forEach(function(x){
+      var r=roomOf(x.s);
+      out.push([x.s.name,x.s.sid,x.s.className||'',r?r.building+' '+r.number:'-',x.a.present,x.a.late,x.a.absent,x.a.leave,x.total,x.total?Math.round((x.a.late+x.a.absent)/x.total*100)+'%':'—']);
+    });
+    downloadFile('查寝统计_'+ui.statsFrom+'_'+ui.statsTo+'.csv',toCSV(out),'text/csv');toast('已导出统计数据');
+  },
+  exportJson:function(){
+    downloadFile('宿舍查寝备份_'+today()+'.json',JSON.stringify(state,null,2),'application/json');toast('已导出备份文件');
+  },
+  importJson:function(){var f=$('#import-file');if(f)f.click();},
+  seedDemoData:function(){
+    confirmBox('将用演示数据<b>覆盖</b>当前全部数据，确定继续？',function(){
+      state=seedDemo();save();render();toast('已加载演示数据');
+    },'覆盖并加载');
+  },
+  clearData:function(){
+    confirmBox('确定清空全部数据？该操作不可恢复，建议先导出备份。',function(){
+      state={rooms:[],students:[],checks:{},leaves:[]};
+      save();render();toast('已清空全部数据');
+    },'确认清空');
+  }
+};
+
+/* ================= 事件绑定 ================= */
+document.body.addEventListener('click',function(e){
+  var mr=$('#modal-root');
+  if(mr.innerHTML&&e.target.closest('#modal-root')&&!e.target.closest('.modal')){closeModal();return;}
+  var el=e.target.closest('[data-act]');
+  if(!el)return;
+  var f=ACTIONS[el.dataset.act];
+  if(f)f(el,e);
+});
+
+document.body.addEventListener('change',function(e){
+  var el=e.target;var id=el.id;
+  if(id==='ck-date'){ui.checkDate=el.value||today();render();}
+  else if(id==='ck-building'){ui.checkBuilding=el.value;refreshCheck();}
+  else if(id==='ck-only'){ui.checkOnlyUnchecked=el.checked;refreshCheck();}
+  else if(id==='stu-class'){ui.studentClass=el.value;var z=$('#stu-zone');if(z)z.innerHTML=studentsTableHTML();}
+  else if(id==='lv-only'){ui.leaveActiveOnly=el.checked;var z2=$('#lv-zone');if(z2)z2.innerHTML=leavesTableHTML();}
+  else if(id==='st-from'){if(el.value){ui.statsFrom=el.value;var z3=$('#st-zone');if(z3)z3.innerHTML=statsZoneHTML();}}
+  else if(id==='st-to'){if(el.value){ui.statsTo=el.value;var z4=$('#st-zone');if(z4)z4.innerHTML=statsZoneHTML();}}
+  else if(id==='st-class'){ui.statsClass=el.value;var z5=$('#st-zone');if(z5)z5.innerHTML=statsZoneHTML();}
+  else if(id==='st-building'){ui.statsBuilding=el.value;var z6=$('#st-zone');if(z6)z6.innerHTML=statsZoneHTML();}
+  else if(el.classList&&el.classList.contains('remark')&&el.dataset.sid){
+    var d=ui.checkDate;var day=state.checks[d]||(state.checks[d]={});
+    var rec=day[el.dataset.sid]||{};rec.remark=el.value;day[el.dataset.sid]=rec;
+    save();
+  }
+  else if(id==='import-file'){
+    var f=el.files&&el.files[0];if(!f)return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      try{
+        var obj=JSON.parse(rd.result);
+        if(!Array.isArray(obj.rooms)||!Array.isArray(obj.students)||!obj.checks||typeof obj.checks!=='object')throw new Error('bad');
+        state={rooms:obj.rooms,students:obj.students,checks:obj.checks,leaves:Array.isArray(obj.leaves)?obj.leaves:[]};
+        save();render();toast('数据恢复成功');
+      }catch(err){toast('导入失败：文件格式不正确');}
+    };
+    rd.readAsText(f);el.value='';
+  }
+});
+
+document.body.addEventListener('input',function(e){
+  var el=e.target;var id=el.id;
+  if(id==='ck-q'){ui.checkQ=el.value;refreshCheck();}
+  else if(id==='stu-q'){ui.studentQ=el.value;var z=$('#stu-zone');if(z)z.innerHTML=studentsTableHTML();}
+  else if(id==='rm-q'){ui.roomQ=el.value;var z2=$('#rm-zone');if(z2)z2.innerHTML=roomsZoneHTML();}
+});
+
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+
+/* ================= 启动 ================= */
+if(!state){
+  state=seedDemo();save();
+  setTimeout(function(){toast('已加载演示数据，可在「数据管理」中清空或备份');},500);
+}
+render();
+</script>
+</body>
+</html>
